@@ -1,8 +1,9 @@
 <?php
 
-namespace Tests\Feature\Api\V1;
+namespace Tests\Feature\Api\V2;
 
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -11,12 +12,16 @@ class TaskTest extends TestCase
 {
     use RefreshDatabase;
     
-    public function test_guest_can_get_list_of_tasks(): void
+    public function test_user_can_get_list_of_tasks(): void
     {
         // Arrange: create 2 fake tasks
-        $tasks = Task::factory()->count(2)->create();
-
+        
+        $user = User::factory()->create();
+        $this->actingAs($user);
         // Act: Make a GET request to the endpoint
+        $tasks = Task::factory()->count(2)->create([
+            'user_id' => $user->id
+        ]);
         $response = $this->getJson('/api/v1/tasks');
 
         // Assert: status is 200 OK and data has 2 items
@@ -29,7 +34,7 @@ class TaskTest extends TestCase
         ]);
     }
 
-    public function test_guest_can_get_single_task(): void
+    public function test_user_can_get_single_task(): void
     {
         // Arange: crate a task
         $task = Task::factory()->create();
@@ -52,7 +57,7 @@ class TaskTest extends TestCase
     }
 
         // `PUT /tasks/{id}` → update existing task
-    public function test_guest_can_update_task(): void
+    public function test_user_can_update_task(): void
     {
         $task = Task::factory()->create();
 
