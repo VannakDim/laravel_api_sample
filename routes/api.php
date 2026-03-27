@@ -11,6 +11,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::prefix('v1')->group(base_path('routes/api/v1.php'));
+// Route::prefix('v2')->group(base_path('routes/api/v1.php'));
 Route::prefix('v2')->middleware('auth:sanctum')->group(base_path('routes/api/v2.php'));
 
 Route::prefix('auth')->group(function () {
