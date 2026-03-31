@@ -8,9 +8,11 @@ use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use App\Services\TaskInputParser;
 
 class TaskController extends Controller
 {
+    public function __construct(protected TaskInputParser $parser) {}
     /**
      * Display a listing of the resource.
      */
@@ -36,7 +38,15 @@ class TaskController extends Controller
 
         Gate::authorize('create', Task::class);
 
-        $task = $request->user()->tasks()->create($request->validated());
+        $data = $request->validated();
+        $parsed = $this->parser->parse($data['name']);
+        if ($parsed) {
+            $data['name'] = $parsed['name'];
+            $data['priority_id'] = $data['priority_id'] ?? ($parsed['priority_id'] ?? null);
+            $data['due_date'] = $data['due_date'] ?? ($parsed['due_date'] ?? null);
+        }
+        $task = $request->user()->tasks()->create($data);
+        // $task = $request->user()->tasks()->create($request->validated());
         $task->load('priority');
 
         $task = Task::create($request->validated());
