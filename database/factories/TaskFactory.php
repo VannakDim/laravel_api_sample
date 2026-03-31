@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Priority;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,6 +22,22 @@ class TaskFactory extends Factory
             'name' => fake()->sentence(),
             'is_completed' => rand(0, 1)
         ];
+    }
+
+    public function withDueDate(Carbon $date): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'due_date' => $date,
+        ]);
+    }
+
+    public function withRandomDueDate(): static
+    {
+        return $this->state(fn(array $attributes) => [
+            'due_date' => rand(0, 1) === 0
+                ? NULL
+                : fake()->dateTimeBetween('-1 week', '+1 week')
+        ]);
     }
 
     public function withPriority(): static
