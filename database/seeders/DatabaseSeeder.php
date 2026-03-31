@@ -36,7 +36,7 @@ class DatabaseSeeder extends Seeder
         //     });
 
         User::factory(5)
-            ->has(Task::factory()->count(50)->withRandomPriority())
+            ->has(Task::factory()->count(10)->withRandomPriority())
             ->create();
     }
 }

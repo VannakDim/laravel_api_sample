@@ -35,9 +35,10 @@ class TaskController extends Controller
 
         Gate::authorize('create', Task::class);
 
-        // $task = Task::create($request->validated()+['user_id'=>$request->user()->id]);
-        $task = $request->user()->tasks()->create($request->validate());
+        $task = $request->user()->tasks()->create($request->validated());
         $task->load('priority');
+
+        $task = Task::create($request->validated());
 
         return $task->toResource();
     }
