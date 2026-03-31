@@ -7,7 +7,7 @@ use Carbon\Carbon;
 
 class TaskInputParser
 {
-    public static function parse(string $input): array
+    public function parse(string $input): ?array
     {
         $priorityId = null;
         if (preg_match('/!(low|medium|high)/i', $input, $matches)) {
@@ -15,14 +15,10 @@ class TaskInputParser
             $priorityId = Priority::whereName($priority)->value('id') ?? null;
         }
 
-        return [
-            'priority_id' => $priorityId,
-        ];
-
         $dueDate = null;
         if (preg_match('/@(.+?)(?:\s+!|\s*$)/', $input, $matches)) {
             $raw = strtolower(trim($matches[1]));
-            $dueDate = match ($raw) {
+            $dueDate = match($raw) {
                 'today' => now(),
                 'tomorrow' => now()->addDay(),
                 'next2d' => now()->addDays(2),
@@ -32,16 +28,11 @@ class TaskInputParser
             };
         }
 
-        return [
-            'priority_id' => $priorityId,
-            'due_date' => $dueDate,
-        ];
-
         $patterns = [
             '/\s?@(.+?)(?:\s+!|\s*$)/', // Remove due date (and the space in front of it)
             '/\s?!?(low|medium|high)/i' // Remove priority (and the space in front of it)
         ];
-
+        
         $name = preg_replace($patterns, '', $input);
         $name = trim($name);
 

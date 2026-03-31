@@ -9,10 +9,24 @@ use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use App\Services\TaskInputParser;
+use Illuminate\Support\Arr;
 
 class TaskController extends Controller
 {
     public function __construct(protected TaskInputParser $parser) {}
+
+
+    private function prepareData(array $data): array
+    {
+        $parsed = $this->parser->parse($data['name']);
+        if ($parsed) {
+            $data['name'] = $parsed['name'];
+            $data['priority_id'] = $data['priority_id'] ?? ($parsed['priority_id'] ?? null);
+            $data['due_date'] = $data['due_date'] ?? ($parsed['due_date'] ?? null);
+        }
+        return $data;
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -39,18 +53,11 @@ class TaskController extends Controller
         Gate::authorize('create', Task::class);
 
         $data = $request->validated();
-        $parsed = $this->parser->parse($data['name']);
-        if ($parsed) {
-            $data['name'] = $parsed['name'];
-            $data['priority_id'] = $data['priority_id'] ?? ($parsed['priority_id'] ?? null);
-            $data['due_date'] = $data['due_date'] ?? ($parsed['due_date'] ?? null);
-        }
-        $task = $request->user()->tasks()->create($data);
-        // $task = $request->user()->tasks()->create($request->validated());
+        $task = $request->user()->tasks()->create(
+            $this->prepareData($data)
+        );
+
         $task->load('priority');
-
-        $task = Task::create($request->validated());
-
         return $task->toResource();
     }
 
@@ -68,10 +75,12 @@ class TaskController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateTaskRequest $request, Task $task)
+    public function update(UpdateTaskRequest $request, Task $task, TaskInputParser $parser)
     {
         Gate::authorize('update', $task);
-        $task->update($request->validated());
+        $task->update(
+            $this->prepareData($request->validated())
+        );
         $task->load('priority');
         return $task->toResource();
     }
