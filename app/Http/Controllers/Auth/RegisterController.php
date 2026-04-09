@@ -11,13 +11,9 @@ use Illuminate\Support\Facades\Hash;
 
 class RegisterController extends Controller
 {
-    /**
-     * Handle the incoming request.
-     */
+
     public function __invoke(RegisterRequest $request)
     {
-
-
         $user = User::create($request->only('name', 'email') + [
             'password' => Hash::make($request->password)
         ]);
